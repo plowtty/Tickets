@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help Desk Tickets</title>
+    <!-- Anti-FOUC: apply theme class before React renders -->
+    <script>
+      (function () {
+        try {
+          var s = JSON.parse(localStorage.getItem('tickets-ui-preferences') || '{}');
+          var t = s.state && s.state.theme;
+          if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
