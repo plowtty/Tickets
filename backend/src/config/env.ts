@@ -3,6 +3,18 @@ import { z } from 'zod';
 
 dotenv.config();
 
+const normalizeDatabaseUrl = (databaseUrl: string) => {
+  try {
+    const parsedUrl = new URL(databaseUrl);
+    if (parsedUrl.searchParams.get('channel_binding') === 'require') {
+      parsedUrl.searchParams.delete('channel_binding');
+    }
+    return parsedUrl.toString();
+  } catch {
+    return databaseUrl;
+  }
+};
+
 // Validación estricta de variables de entorno con Zod
 // Buena práctica: fallar en startup si falta algo crítico, no en runtime
 const envSchema = z.object({
@@ -33,6 +45,7 @@ if (!parsed.success) {
 
 export const env = {
   ...parsed.data,
+  DATABASE_URL: normalizeDatabaseUrl(parsed.data.DATABASE_URL),
   PORT: parseInt(parsed.data.PORT, 10),
   BCRYPT_ROUNDS: parseInt(parsed.data.BCRYPT_ROUNDS, 10),
   RATE_LIMIT_WINDOW_MS: parseInt(parsed.data.RATE_LIMIT_WINDOW_MS, 10),
