@@ -43,9 +43,12 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+const normalizedDatabaseUrl = normalizeDatabaseUrl(parsed.data.DATABASE_URL);
+process.env.DATABASE_URL = normalizedDatabaseUrl;
+
 export const env = {
   ...parsed.data,
-  DATABASE_URL: normalizeDatabaseUrl(parsed.data.DATABASE_URL),
+  DATABASE_URL: normalizedDatabaseUrl,
   PORT: parseInt(parsed.data.PORT, 10),
   BCRYPT_ROUNDS: parseInt(parsed.data.BCRYPT_ROUNDS, 10),
   RATE_LIMIT_WINDOW_MS: parseInt(parsed.data.RATE_LIMIT_WINDOW_MS, 10),
