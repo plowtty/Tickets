@@ -3,6 +3,15 @@ import { ApiResponse } from '../utils/apiResponse';
 import { userService } from '../services/user.service';
 
 export const userController = {
+	async create(req: Request, res: Response, next: NextFunction) {
+		try {
+			const user = await userService.create(req.body);
+			ApiResponse.created(res, user, 'User created successfully');
+		} catch (error) {
+			next(error);
+		}
+	},
+
 	async list(_req: Request, res: Response, next: NextFunction) {
 		try {
 			const users = await userService.list();

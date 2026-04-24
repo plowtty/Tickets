@@ -22,9 +22,23 @@ interface DeleteState {
   user: User;
 }
 
+interface CreateState {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+}
+
 const UsersPage = () => {
   const { t, formatDate } = useI18n();
-  const { users, isLoading, error, fetchUsers, updateUser, removeUser } = useUsers();
+  const { users, isLoading, error, fetchUsers, createUser, updateUser, removeUser } = useUsers();
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState<CreateState>({
+    name: '',
+    email: '',
+    password: '',
+    role: 'AGENT',
+  });
   const [editing, setEditing] = useState<EditState | null>(null);
   const [deleting, setDeleting] = useState<DeleteState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -32,6 +46,36 @@ const UsersPage = () => {
 
   const startEdit = (u: User) => setEditing({ userId: u.id, role: u.role, active: u.active });
   const cancelEdit = () => { setEditing(null); setActionError(null); };
+
+  const openCreate = () => {
+    setCreating(true);
+    setCreateForm({ name: '', email: '', password: '', role: 'AGENT' });
+    setActionError(null);
+  };
+
+  const closeCreate = () => {
+    setCreating(false);
+    setActionError(null);
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.name || !createForm.email || !createForm.password) {
+      setActionError(t('users.errorCreate'));
+      return;
+    }
+
+    setSaving(true);
+    setActionError(null);
+
+    try {
+      await createUser(createForm);
+      closeCreate();
+    } catch (error) {
+      setActionError(getErrorMessage(error, t('users.errorCreate')));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!editing) return;
@@ -68,13 +112,16 @@ const UsersPage = () => {
           <h2 className="section-title">{t('users.title')}</h2>
           <p className="section-subtitle">{t('users.subtitle')}</p>
         </div>
-        <button
-          onClick={fetchUsers}
-          disabled={isLoading}
-          className="btn-secondary flex items-center gap-2"
-        >
-          {isLoading ? t('common.loading') : `↺ ${t('users.refresh')}`}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={openCreate} className="btn-primary">{t('users.createUser')}</button>
+          <button
+            onClick={fetchUsers}
+            disabled={isLoading}
+            className="btn-secondary flex items-center gap-2"
+          >
+            {isLoading ? t('common.loading') : `↺ ${t('users.refresh')}`}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -143,6 +190,70 @@ const UsersPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Create Modal */}
+      {creating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="modal-card">
+            <h3 className="panel-title">{t('users.createUser')}</h3>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>{t('auth.name')}</label>
+                <input
+                  className="input-field"
+                  value={createForm.name}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder={t('users.namePlaceholder')}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>{t('auth.email')}</label>
+                <input
+                  type="email"
+                  className="input-field"
+                  value={createForm.email}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, email: event.target.value }))}
+                  placeholder={t('users.emailPlaceholder')}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>{t('auth.password')}</label>
+                <input
+                  type="password"
+                  className="input-field"
+                  value={createForm.password}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
+                  placeholder={t('users.passwordPlaceholder')}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>{t('common.role')}</label>
+                <select
+                  value={createForm.role}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, role: event.target.value as Role }))}
+                  className="input-field"
+                >
+                  {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {actionError && <p className="mt-3 text-xs text-red-600">{actionError}</p>}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={closeCreate} className="btn-ghost">{t('common.cancel')}</button>
+              <button
+                onClick={handleCreate}
+                disabled={saving}
+                className="btn-primary"
+              >
+                {saving ? t('common.loading') : t('users.createAction')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editing && (() => {

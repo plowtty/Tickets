@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { AppError } from '../middleware/error.middleware';
-import { UpdateUserInput } from '../schemas/user.schema';
+import { hashPassword } from '../utils/password';
+import { CreateUserInput, UpdateUserInput } from '../schemas/user.schema';
 
 const userSelect = {
 	id: true,
@@ -14,6 +15,27 @@ const userSelect = {
 };
 
 export const userService = {
+	async create(input: CreateUserInput) {
+		const existing = await prisma.user.findUnique({ where: { email: input.email } });
+		if (existing) {
+			throw new AppError('Email already in use', 409);
+		}
+
+		const hashedPassword = await hashPassword(input.password);
+
+		return prisma.user.create({
+			data: {
+				name: input.name,
+				email: input.email,
+				password: hashedPassword,
+				role: input.role,
+				active: input.active,
+				avatar: input.avatar,
+			},
+			select: userSelect,
+		});
+	},
+
 	async list() {
 		return prisma.user.findMany({
 			select: userSelect,

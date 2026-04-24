@@ -5,9 +5,9 @@ import { useI18n } from '../../hooks/useI18n';
 const RegisterForm = () => {
   const { register, isLoading, error, clearError } = useAuth();
   const { t } = useI18n();
-  const [name, setName] = useState('New User');
-  const [email, setEmail] = useState('new.user@helpdesk.com');
-  const [password, setPassword] = useState('Password123');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

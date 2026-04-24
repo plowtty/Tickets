@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { userService, UpdateUserPayload } from '../services/user.service';
+import { userService, CreateUserPayload, UpdateUserPayload } from '../services/user.service';
 import { User } from '../types';
 import { getErrorMessage } from '../utils/getErrorMessage';
 
@@ -29,10 +29,16 @@ export function useUsers() {
     return updated;
   }, []);
 
+  const createUser = useCallback(async (payload: CreateUserPayload) => {
+    const created = await userService.create(payload);
+    setUsers(prev => [created, ...prev]);
+    return created;
+  }, []);
+
   const removeUser = useCallback(async (id: string) => {
     await userService.remove(id);
     setUsers(prev => prev.filter(u => u.id !== id));
   }, []);
 
-  return { users, isLoading, error, fetchUsers, updateUser, removeUser };
+  return { users, isLoading, error, fetchUsers, createUser, updateUser, removeUser };
 }
