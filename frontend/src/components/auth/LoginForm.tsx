@@ -11,7 +11,11 @@ const LoginForm = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     clearError();
-    await login({ email, password });
+    try {
+      await login({ email, password });
+    } catch {
+      return;
+    }
   };
 
   return (

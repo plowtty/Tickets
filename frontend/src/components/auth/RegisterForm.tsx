@@ -12,7 +12,11 @@ const RegisterForm = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     clearError();
-    await register({ name, email, password });
+    try {
+      await register({ name, email, password });
+    } catch {
+      return;
+    }
   };
 
   return (
